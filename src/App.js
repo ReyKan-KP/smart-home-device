@@ -6,7 +6,7 @@ export default function BluetoothControlWithVoice() {
   const [isListening, setIsListening] = useState(false);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://86be-14-139-177-158.ngrok-free.app");
+    const ws = new WebSocket("wss://86be-14-139-177-158.ngrok-free.app");
     setSocket(ws);
 
     ws.onmessage = (event) => {
