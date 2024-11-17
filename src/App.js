@@ -16,7 +16,7 @@ export default function EnhancedBluetoothControl() {
   const [state, setState] = useState("Ready for command");
 
   useEffect(() => {
-    const ws = new WebSocket("wss://68db-61-1-175-163.ngrok-free.app");
+    const ws = new WebSocket("wss://bdda-14-139-177-158.ngrok-free.app");
     setSocket(ws);
     return () => {
       ws.close();
