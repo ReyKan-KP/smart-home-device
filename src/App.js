@@ -54,14 +54,123 @@ export default function EnhancedSmartVoiceControl() {
       console.log(`Heard command: ${command}`);
       addToast(command);
 
-      const lightOnPhrases = ["turn on the light", "light on", "lights on"];
-      const lightOffPhrases = ["turn off the light", "light off", "lights off"];
-      const socketOnPhrases = ["turn on the socket", "socket on", "plug on"];
+      const lightOnPhrases = [
+        "turn on the light",
+        "light on",
+        "lights on",
+        "switch on the light",
+        "turn the light on",
+        "put the light on",
+        "activate the light",
+        "power on the light",
+        "turn on lights",
+        "enable the light",
+        "can you turn on the light",
+        "please turn on the light",
+        "let there be light",
+        "make the light bright",
+        "light it up",
+        "bring up the light",
+        "light up the room",
+        "let's have some light",
+        "on with the lights",
+        "illuminate the room",
+        "brighten the room",
+      ];
+
+      const lightOffPhrases = [
+        "turn off the light",
+        "light off",
+        "lights off",
+        "switch off the light",
+        "turn the light off",
+        "put the light off",
+        "deactivate the light",
+        "power off the light",
+        "turn off lights",
+        "disable the light",
+        "can you turn off the light",
+        "please turn off the light",
+        "kill the light",
+        "shut down the light",
+        "make it dark",
+        "switch the light off",
+        "cut the light",
+        "stop the light",
+        "extinguish the light",
+        "darken the room",
+        // Adding "of" variants
+        "turn of the light",
+        "light of",
+        "lights of",
+        "switch of the light",
+        "turn the light of",
+        "put the light of",
+        "deactivate the light",
+        "power of the light",
+        "turn of lights",
+        "disable the light",
+      ];
+
+      const socketOnPhrases = [
+        "turn on the socket",
+        "socket on",
+        "plug on",
+        "switch on the socket",
+        "turn the socket on",
+        "put the socket on",
+        "activate the socket",
+        "power on the socket",
+        "turn on plug",
+        "enable the socket",
+        "switch on plug",
+        "turn the plug on",
+        "can you turn on the socket",
+        "please turn on the socket",
+        "activate the plug",
+        "switch on the plug",
+        "get the socket on",
+        "socket power on",
+        "engage the socket",
+        "make the socket live",
+        "plug in the socket",
+      ];
+
       const socketOffPhrases = [
         "turn off the socket",
         "socket off",
         "plug off",
+        "switch off the socket",
+        "turn the socket off",
+        "put the socket off",
+        "deactivate the socket",
+        "power off the socket",
+        "turn off plug",
+        "disable the socket",
+        "switch off plug",
+        "turn the plug off",
+        "can you turn off the socket",
+        "please turn off the socket",
+        "deactivate the plug",
+        "switch off the plug",
+        "get the socket off",
+        "socket power off",
+        "disengage the socket",
+        "make the socket dead",
+        "unplug the socket",
+        // Adding "of" variants
+        "turn of the socket",
+        "socket of",
+        "plug of",
+        "switch of the socket",
+        "turn the socket of",
+        "put the socket of",
+        "deactivate the socket",
+        "power of the socket",
+        "turn of plug",
+        "disable the socket",
       ];
+
       const timerPhrases = ["set timer", "start timer"];
 
       if (lightOnPhrases.some((phrase) => command.includes(phrase))) {
@@ -225,8 +334,7 @@ export default function EnhancedSmartVoiceControl() {
             </button>
             <p className="voice-instruction">
               Tap the button and say "Turn on the light", "Turn off the light",
-              "Turn on the socket", "Turn off the socket", or "Set timer for 10
-              seconds"
+              "Turn on the socket" or "Turn off the socket".
             </p>
           </div>
         )}
@@ -537,7 +645,7 @@ export default function EnhancedSmartVoiceControl() {
             right: 20px;
           }
           .toast {
-            width: 100%;
+            width: 80%;
           }
         }
       `}</style>
