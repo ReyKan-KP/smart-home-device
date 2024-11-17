@@ -1,4 +1,4 @@
-# Smart Voice Control System
+# Smart Home Device
 
 This project enables controlling smart devices like lights and sockets using voice commands. It also includes timer and scheduling functionality to control devices at specific times. The system uses WebSockets for real-time communication between the frontend and backend, Arduino for interfacing with the hardware, and the HC05 Bluetooth module for wireless communication.
 
@@ -30,8 +30,8 @@ To run this project, you will need the following:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/smart-voice-control.git
-   cd smart-voice-control
+   git clone https://github.com/ReyKan-KP/smart-home-device.git
+   cd smart-home-device
    ```
 
 2. **Install dependencies:**
