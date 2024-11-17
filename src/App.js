@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { format, addSeconds } from "date-fns";
-import { Mic, Clock, Calendar, Volume2 } from "lucide-react";
+import { Mic, Clock, Calendar, Volume2, X } from "lucide-react";
 
-export default function EnhancedBluetoothControl() {
+export default function EnhancedSmartVoiceControl() {
   const [socket, setSocket] = useState(null);
   const [isListening, setIsListening] = useState(false);
   const [activeTab, setActiveTab] = useState("voice");
@@ -14,6 +14,10 @@ export default function EnhancedBluetoothControl() {
   const [scheduleTime, setScheduleTime] = useState("");
   const [scheduleCommand, setScheduleCommand] = useState("light on");
   const [state, setState] = useState("Ready for command");
+  const [countdown, setCountdown] = useState(null);
+  const [toasts, setToasts] = useState([]);
+
+  const countdownRef = useRef(null);
 
   useEffect(() => {
     const ws = new WebSocket("wss://3583-14-139-177-158.ngrok-free.app");
@@ -48,9 +52,17 @@ export default function EnhancedBluetoothControl() {
     recognition.onresult = (event) => {
       const command = event.results[0][0].transcript.toLowerCase();
       console.log(`Heard command: ${command}`);
+      addToast(command);
 
       const lightOnPhrases = ["turn on the light", "light on", "lights on"];
       const lightOffPhrases = ["turn off the light", "light off", "lights off"];
+      const socketOnPhrases = ["turn on the socket", "socket on", "plug on"];
+      const socketOffPhrases = [
+        "turn off the socket",
+        "socket off",
+        "plug off",
+      ];
+      const timerPhrases = ["set timer", "start timer"];
 
       if (lightOnPhrases.some((phrase) => command.includes(phrase))) {
         sendCommand("light on");
@@ -58,12 +70,43 @@ export default function EnhancedBluetoothControl() {
       } else if (lightOffPhrases.some((phrase) => command.includes(phrase))) {
         sendCommand("light off");
         setState("Light turned off");
+      } else if (socketOnPhrases.some((phrase) => command.includes(phrase))) {
+        sendCommand("socket on");
+        setState("Socket turned on");
+      } else if (socketOffPhrases.some((phrase) => command.includes(phrase))) {
+        sendCommand("socket off");
+        setState("Socket turned off");
+      } else if (timerPhrases.some((phrase) => command.includes(phrase))) {
+        const seconds = extractSeconds(command);
+        if (seconds) {
+          setVoiceTimer(seconds);
+        } else {
+          setState("Could not determine timer duration");
+        }
       } else {
         setState("Command not recognized");
       }
     };
 
     recognition.start();
+  };
+
+  const extractSeconds = (command) => {
+    const match = command.match(/(\d+)\s*(second|minute|min|sec)/);
+    if (match) {
+      const value = parseInt(match[1]);
+      const unit = match[2];
+      if (unit.startsWith("min")) {
+        return value * 60;
+      }
+      return value;
+    }
+    return null;
+  };
+
+  const setVoiceTimer = (seconds) => {
+    setTimerSeconds(seconds);
+    setTimer();
   };
 
   const sendCommand = (command) => {
@@ -74,11 +117,28 @@ export default function EnhancedBluetoothControl() {
   };
 
   const setTimer = () => {
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+    }
+
     const targetTime = addSeconds(new Date(), timerSeconds);
-    const timeoutId = setTimeout(() => {
-      sendCommand(timerCommand);
-      setState(`Timer executed: ${timerCommand}`);
-    }, timerSeconds * 1000);
+    setCountdown(timerSeconds);
+
+    countdownRef.current = setInterval(() => {
+      const now = new Date();
+      const remaining = Math.round(
+        (targetTime.getTime() - now.getTime()) / 1000
+      );
+
+      if (remaining <= 0) {
+        clearInterval(countdownRef.current);
+        setCountdown(null);
+        sendCommand(timerCommand);
+        setState(`Timer executed: ${timerCommand}`);
+      } else {
+        setCountdown(remaining);
+      }
+    }, 1000);
 
     setState(
       `Timer set for ${format(
@@ -86,7 +146,6 @@ export default function EnhancedBluetoothControl() {
         "HH:mm:ss"
       )} to execute: ${timerCommand}`
     );
-    return () => clearTimeout(timeoutId);
   };
 
   const scheduleDateCommand = () => {
@@ -112,6 +171,16 @@ export default function EnhancedBluetoothControl() {
         "Scheduled time is in the past. Please choose a future date and time."
       );
     }
+  };
+
+  const addToast = (message) => {
+    const newToast = { id: Date.now(), message };
+    setToasts((prevToasts) => [...prevToasts, newToast]);
+    setTimeout(() => removeToast(newToast.id), 3000);
+  };
+
+  const removeToast = (id) => {
+    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
   };
 
   return (
@@ -155,7 +224,9 @@ export default function EnhancedBluetoothControl() {
               </span>
             </button>
             <p className="voice-instruction">
-              Tap the button and say "Turn on the light" or "Turn off the light"
+              Tap the button and say "Turn on the light", "Turn off the light",
+              "Turn on the socket", "Turn off the socket", or "Set timer for 10
+              seconds"
             </p>
           </div>
         )}
@@ -180,12 +251,17 @@ export default function EnhancedBluetoothControl() {
               >
                 <option value="light on">Light On</option>
                 <option value="light off">Light Off</option>
+                <option value="socket on">Socket On</option>
+                <option value="socket off">Socket Off</option>
               </select>
             </div>
             <button className="action-button" onClick={setTimer}>
               <Clock size={20} />
               <span>Set Timer</span>
             </button>
+            {countdown !== null && (
+              <div className="countdown">Countdown: {countdown} seconds</div>
+            )}
           </div>
         )}
         {activeTab === "schedule" && (
@@ -217,6 +293,8 @@ export default function EnhancedBluetoothControl() {
               >
                 <option value="light on">Light On</option>
                 <option value="light off">Light Off</option>
+                <option value="socket on">Socket On</option>
+                <option value="socket off">Socket Off</option>
               </select>
             </div>
             <button className="action-button" onClick={scheduleDateCommand}>
@@ -229,6 +307,19 @@ export default function EnhancedBluetoothControl() {
       <div className="data-display" aria-live="polite">
         <h3>Status</h3>
         <p>{state}</p>
+      </div>
+      <div className="toast-container">
+        {toasts.map((toast) => (
+          <div key={toast.id} className="toast">
+            <span>{toast.message}</span>
+            <button
+              onClick={() => removeToast(toast.id)}
+              className="toast-close"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        ))}
       </div>
       <style jsx>{`
         .container {
@@ -373,6 +464,42 @@ export default function EnhancedBluetoothControl() {
           color: #34495e;
           font-size: 16px;
         }
+        .countdown {
+          text-align: center;
+          font-size: 18px;
+          font-weight: bold;
+          margin-top: 15px;
+          color: #2c3e50;
+        }
+        .toast-container {
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 10px;
+          z-index: 1000;
+        }
+        .toast {
+          background-color: #34495e;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          min-width: 200px;
+        }
+        .toast-close {
+          background: none;
+          border: none;
+          color: white;
+          cursor: pointer;
+          padding: 0;
+          margin-left: 10px;
+        }
         @keyframes pulse {
           0% {
             opacity: 1;
@@ -404,6 +531,13 @@ export default function EnhancedBluetoothControl() {
           .input-group select,
           .action-button {
             font-size: 14px;
+          }
+          .toast-container {
+            left: 20px;
+            right: 20px;
+          }
+          .toast {
+            width: 100%;
           }
         }
       `}</style>
