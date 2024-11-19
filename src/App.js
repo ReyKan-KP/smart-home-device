@@ -20,7 +20,7 @@ export default function EnhancedSmartVoiceControl() {
   const countdownRef = useRef(null);
 
   useEffect(() => {
-    const ws = new WebSocket("wss://3583-14-139-177-158.ngrok-free.app");
+    const ws = new WebSocket("wss://eb5e-14-139-177-158.ngrok-free.app");
     setSocket(ws);
     return () => {
       ws.close();
